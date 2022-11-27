@@ -11,7 +11,7 @@ import torch
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from pypots.data import generate_random_walk_for_classification, mcar, masked_fill, mcar_feature
+from pypots.data import generate_random_walk_for_classification, mcar, masked_fill
 from pypots.data import load_specific_dataset
 from pypots.tests import finance
 
@@ -74,7 +74,7 @@ from pypots.tests import finance
 #     return data
 
 def finance_data(
-    mcar_rate=0.3
+    func, feature_index, rate
 ):
     """Generate a random-walk dataset."""
     # generate samples
@@ -88,9 +88,9 @@ def finance_data(
     train_X, test_X, train_y, test_y = train_test_split(X, y, test_size=0.2)
     train_X, val_X, train_y, val_y = train_test_split(train_X, train_y, test_size=0.2)
     # create random missing values
-    _, train_X, missing_mask, _ = mcar_feature(train_X, 1, mcar_rate)
+    _, train_X, missing_mask, _ = func(train_X, feature_index, rate)
     train_X = masked_fill(train_X, 1 - missing_mask, torch.nan)
-    _, val_X, missing_mask, _ = mcar_feature(val_X, 1, mcar_rate)
+    _, val_X, missing_mask, _ = func(val_X, feature_index, rate)
     val_X = masked_fill(val_X, 1 - missing_mask, torch.nan)
     # test set is left to mask after normalization
 
@@ -108,8 +108,8 @@ def finance_data(
     test_X = test_X.reshape(-1, n_steps, n_features)
 
     # mask values in the test set as ground truth
-    test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar_feature(
-        test_X, 1, mcar_rate
+    test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = func(
+        test_X, feature_index, rate
     )
     test_X = masked_fill(test_X, 1 - test_X_missing_mask, torch.nan)
 
