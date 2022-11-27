@@ -16,6 +16,7 @@ from pypots.data.generating import (
 from pypots.data.integration import (
     masked_fill,
     mcar,
+    mcar_feature,
     pickle_load,
     pickle_dump,
 )
