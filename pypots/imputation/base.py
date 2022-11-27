@@ -121,12 +121,12 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                         imputation_collector, val_X_intact, val_indicating_mask
                     )
                     self.logger["validating_loss"].append(mean_val_loss)
-                    print(
-                        f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
-                    )
+                    # print(
+                    #     f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
+                    # )
                     mean_loss = mean_val_loss
                 else:
-                    print(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
+                    # print(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if mean_loss < self.best_loss:
@@ -163,4 +163,4 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         if np.equal(self.best_loss.item(), float("inf")):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        print("Finished training.")
+        # print("Finished training.")

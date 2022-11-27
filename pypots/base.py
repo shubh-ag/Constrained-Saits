@@ -24,7 +24,7 @@ class BaseModel(ABC):
                 if torch.cuda.is_available() and torch.cuda.device_count() > 0
                 else "cpu"
             )
-            print("No given device, using default device:", self.device)
+            # print("No given device, using default device:", self.device)
         else:
             self.device = device
 
@@ -202,6 +202,6 @@ class BaseNNModel(BaseModel):
     def _print_model_size(self):
         """Print the number of trainable parameters in the initialized NN model."""
         num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-        print(
-            f"Model initialized successfully. Number of the trainable parameters: {num_params}"
-        )
+        # print(
+        #     f"Model initialized successfully. Number of the trainable parameters: {num_params}"
+        # )

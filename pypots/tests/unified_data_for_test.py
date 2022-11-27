@@ -202,6 +202,6 @@ def finance_data(
 
 # generate and cache data first.
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
-DATA = finance_data()
+# DATA = finance_data()
 # print(DATA['test_X_indicating_mask'].shape)
 # print(DATA['test_X_indicating_mask'][0][0])
