@@ -139,11 +139,11 @@ class _CSAITS(nn.Module):
         reconstruction_loss = 0
         imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self.impute(inputs)
 
-        X_sma_7 = bn.move_mean(X, window=7, min_count=1, axis=1)
-        X_sma_28 = bn.move_mean(X, window=28, min_count=1, axis=1)
+        X_sma_7 = bn.move_mean(X.detach().cpu().numpy(), window=7, min_count=1, axis=1)
+        X_sma_28 = bn.move_mean(X.detach().cpu().numpy(), window=28, min_count=1, axis=1)
 
-        l1 = torch.sum(torch.abs(X - X_tilde_3) - torch.Tensor(X_sma_7)) / torch.sum(masks)
-        l2 = torch.sum(torch.abs(X - X_tilde_3) - torch.Tensor(X_sma_28)) / torch.sum(masks)
+        l1 = torch.sum(torch.abs(X - X_tilde_3) - torch.Tensor(X_sma_7, device=self.device)) / torch.sum(masks)
+        l2 = torch.sum(torch.abs(X - X_tilde_3) - torch.Tensor(X_sma_28, device=self.device)) / torch.sum(masks)
         # print(l1, l2)
 
         reconstruction_loss += cal_mae(X_tilde_1, X, masks)
