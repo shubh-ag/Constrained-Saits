@@ -60,7 +60,7 @@ class Mean(BaseImputer):
                         if j == 0:
                             X_copy[i][j][k] = self.nan
                         else:
-                            X_copy[i][j][k] = np.nanmean(X_copy[i][:j][k])
+                            X_copy[i][j][k] = np.nanmean(X_copy[i,:j,k])
 
         if np.isnan(X_copy).any():
             X_copy = np.nan_to_num(X_copy, nan=self.nan)
