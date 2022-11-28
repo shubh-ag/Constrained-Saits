@@ -7,7 +7,6 @@ Expose all usable data manipulation classes and functions.
 
 from pypots.data.base import BaseDataset
 from pypots.data.dataset_for_brits import DatasetForBRITS
-from pypots.data.dataset_for_grud import DatasetForGRUD
 from pypots.data.dataset_for_mit import DatasetForMIT
 from pypots.data.generating import (
     generate_random_walk,
