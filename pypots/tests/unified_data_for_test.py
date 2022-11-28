@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 
 from pypots.data import generate_random_walk_for_classification, mcar, masked_fill
 from pypots.data import load_specific_dataset
-from pypots.tests import finance
+# from pypots.tests import finance
 
 # def gene_random_walk_data(
 #     n_steps=24, n_features=10, n_classes=2, n_samples_each_class=1000

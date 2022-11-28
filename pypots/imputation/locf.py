@@ -50,58 +50,20 @@ class LOCF(BaseImputer):
         This implementation gets inspired by the question on StackOverflow:
         https://stackoverflow.com/questions/41190852/most-efficient-way-to-forward-fill-nan-values-in-numpy-array
         """
-        trans_X = X.transpose((0, 2, 1))
-        mask = np.isnan(trans_X)
-        n_samples, n_steps, n_features = mask.shape
-        idx = np.where(~mask, np.arange(n_features), 0)
-        np.maximum.accumulate(idx, axis=2, out=idx)
+        X_copy = X.copy()
+        n_samples, n_steps, n_features = X_copy.shape
 
-        collector = []
-        for x, i in zip(trans_X, idx):
-            collector.append(x[np.arange(n_steps)[:, None], i])
-        X_imputed = np.asarray(collector)
-        X_imputed = X_imputed.transpose((0, 2, 1))
+        for i in range(n_samples):
+            for j in range(n_steps):
+                for k in range(n_features):
+                    if np.isnan(X_copy[i][j][k]):
+                        X_copy[i][j][k] = X_copy[i][j-1][k]
 
-        # If there are values still missing,
-        # they are missing at the beginning of the time-series sequence.
-        # Impute them with self.nan
-        if np.isnan(X_imputed).any():
-            X_imputed = np.nan_to_num(X_imputed, nan=self.nan)
+        if np.isnan(X_copy).any():
+            X_copy = np.nan_to_num(X_copy, nan=self.nan)
 
-        return X_imputed
+        return X_copy
 
-    def locf_torch(self, X):
-        """Torch implementation of LOCF.
-
-        Parameters
-        ----------
-        X : tensor,
-            Time series containing missing values (NaN) to be imputed.
-
-        Returns
-        -------
-        X_imputed : tensor,
-            Imputed time series.
-        """
-        trans_X = X.permute((0, 2, 1))
-        mask = torch.isnan(trans_X)
-        n_samples, n_steps, n_features = mask.shape
-        idx = torch.where(~mask, torch.arange(n_features, device=mask.device), 0)
-        idx = torch.cummax(idx, dim=2)
-
-        collector = []
-        for x, i in zip(trans_X, idx):
-            collector.append(x[torch.arange(n_steps)[:, None], i])
-        X_imputed = torch.concat(collector, dim=0)
-        X_imputed = X_imputed.permute((0, 2, 1))
-
-        # If there are values still missing,
-        # they are missing at the beginning of the time-series sequence.
-        # Impute them with self.nan
-        if torch.isnan(X_imputed).any():
-            X_imputed = torch.nan_to_num(X_imputed, nan=self.nan)
-
-        return X_imputed
 
     def impute(self, X):
         """Impute missing values
@@ -126,7 +88,7 @@ class LOCF(BaseImputer):
         if isinstance(X, np.ndarray):
             X_imputed = self.locf_numpy(X)
         elif isinstance(X, torch.Tensor):
-            X_imputed = self.locf_torch(X).detach().cpu().numpy()
+            X_imputed = self.locf_numpy(X.detach().cpu().numpy())
         else:
             raise TypeError(
                 "X must be type of list/np.ndarray/torch.Tensor, " f"but got {type(X)}"

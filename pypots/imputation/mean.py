@@ -50,21 +50,22 @@ class Mean(BaseImputer):
         This implementation gets inspired by the question on StackOverflow:
         https://stackoverflow.com/questions/41190852/most-efficient-way-to-forward-fill-nan-values-in-numpy-array
         """
-        n_samples, n_steps, n_features = X.shape
-
-        mean = np.nanmean(X, axis=1)
-        std = np.nanstd(X, axis=1)
+        X_copy = X.copy()
+        n_samples, n_steps, n_features = X_copy.shape
 
         for i in range(n_samples):
             for j in range(n_steps):
                 for k in range(n_features):
-                    if np.isnan(X[i][j][k]):
-                        X[i][j][k] = mean[i][k] + 10*std[i][k]
+                    if np.isnan(X_copy[i][j][k]):
+                        if j == 0:
+                            X_copy[i][j][k] = self.nan
+                        else:
+                            X_copy[i][j][k] = np.nanmean(X_copy[i][:j][k])
 
-        if np.isnan(X).any():
-            X = np.nan_to_num(X, nan=self.nan)
+        if np.isnan(X_copy).any():
+            X_copy = np.nan_to_num(X_copy, nan=self.nan)
 
-        return X
+        return X_copy
 
     def impute(self, X):
         """Impute missing values

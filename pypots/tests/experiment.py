@@ -2,24 +2,28 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-from tqdm.notebook import tqdm
+from tqdm.auto import tqdm
 import pickle
 import numpy as np
-from pypots.tests import finance
 
 from pypots.imputation import (
-    SAITS,
     BRITS,
-    LOCF,
-    CSAITS7,
     CSAITS28,
+    CSAITS7,
     CSAITS7_28,
-    Mean
+    LOCF,
+    Mean,
+    SAITS
 )
 
 from pypots.data import mcar_sample_all, mcar_sample_feature
 from pypots.utils.metrics import cal_mae, cal_mre, cal_rmse
 from pypots.tests.unified_data_for_test import finance_data
+
+def data_load(provider, filename):
+    with open('../data/df_' + provider + '_' + filename + '.npy', 'rb') as f:
+        df = np.load(f)
+    return df
 
 
 def run_saits(model, EPOCHS, DATA):
@@ -103,15 +107,27 @@ def run(func, feature_index, rate):
     all_results_brits = []
     all_results_locf = []
 
-    for _ in tqdm(range(50), position=2, leave=False, desc='simulations'):
-        data = finance_data(finance.data('oanda', 'EURUSD'), func, feature_index, rate)
-        all_results_csaits_7.append(run_saits(CSAITS7, 5, data.copy()))
-        all_results_csaits_28.append(run_saits(CSAITS28, 5, data.copy()))
-        all_results_csaits_728.append(run_saits(CSAITS7_28, 5, data.copy()))
-        all_results_saits.append(run_saits(SAITS, 5, data.copy()))
-        all_results_mean.append(run_stats(Mean, 5, data.copy()))
-        all_results_locf.append(run_stats(LOCF, 5, data.copy()))
-        all_results_brits.append(run_brits(5, data.copy()))
+    for _ in tqdm(range(3), position=2, leave=False, desc='simulations'):
+        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+        all_results_csaits_7.append(run_saits(CSAITS7, 5, data))
+
+        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+        all_results_csaits_28.append(run_saits(CSAITS28, 5, data))
+
+        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+        all_results_csaits_728.append(run_saits(CSAITS7_28, 5, data))
+
+        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+        all_results_saits.append(run_saits(SAITS, 5, data))
+
+        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+        all_results_mean.append(run_stats(Mean, 5, data))
+        
+        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+        all_results_locf.append(run_stats(LOCF, 5, data))
+
+        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+        all_results_brits.append(run_brits(5, data))
 
     return all_results_csaits_7, all_results_csaits_28, all_results_csaits_728, all_results_saits, all_results_brits, all_results_locf, all_results_mean
 
@@ -144,5 +160,5 @@ for rate in tqdm(mcar_rates, desc='rates', position=0):
         results['LOCF'] = np.mean(all_results_locf, axis=0)
         results['MEAN'] = np.mean(all_results_mean, axis=0)
 
-        with open('/content/drive/MyDrive/mds/experiment_' + str(index) + '_' + str(rate) + '.pickle', 'wb') as handle:
+        with open('../results/experiment_' + str(index) + '_' + str(rate) + '.pickle', 'wb') as handle:
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
