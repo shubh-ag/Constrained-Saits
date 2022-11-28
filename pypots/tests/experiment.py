@@ -19,7 +19,7 @@ from pypots.imputation import (
 
 from pypots.data import mcar_sample_all, mcar_sample_feature
 from pypots.utils.metrics import cal_mae, cal_mre, cal_rmse
-from unified_data_for_test import finance_data
+from pypots.tests.unified_data_for_test import finance_data
 
 
 def run_saits(model, EPOCHS, DATA):
@@ -144,5 +144,5 @@ for rate in tqdm(mcar_rates, desc='rates', position=0):
         results['LOCF'] = np.mean(all_results_locf, axis=0)
         results['MEAN'] = np.mean(all_results_mean, axis=0)
 
-        with open('experiment_' + str(index) + '_' + str(rate) + '.pickle', 'wb') as handle:
+        with open('/content/drive/MyDrive/mds/experiment_' + str(index) + '_' + str(rate) + '.pickle', 'wb') as handle:
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
