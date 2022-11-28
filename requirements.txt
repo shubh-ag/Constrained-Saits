@@ -7,3 +7,4 @@ tensorboard
 pandas
 pycorruptor
 tsdb
+bottleneck

@@ -33,17 +33,17 @@ def mask_data(size, setting_percentage, setting_type):
         index_numbers = random.sample(range(0, size - 1), count)
     return index_numbers
 
-def get_data(setting_id, filename):
-    data = pyfinancialdata.get_multi_year(provider='oanda',
+def get_data(filename):
+    data = pyfinancialdata.get_multi_year(provider='histdata',
                                           instrument=filename,
-                                          years=[2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020],
+                                          years=[2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018],
                                           time_group='30min')
     data = data.reset_index()
     data['time'] = data['date'].apply(lambda x: x.time())
     data['date'] = data['date'].apply(lambda x: x.date())
 
     counts = data.groupby('date').count().reset_index()
-    counts = counts[counts['time'] == 48]['date']
+    counts = counts[counts['time'] == 47]['date']
 
     data = data[data['date'].isin(counts)]
     #

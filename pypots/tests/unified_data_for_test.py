@@ -74,11 +74,11 @@ from pypots.tests import finance
 #     return data
 
 def finance_data(
-    func, feature_index, rate
+    X, func, feature_index, rate
 ):
     """Generate a random-walk dataset."""
     # generate samples
-    X = finance.df
+    # X = finance.df
     y = np.ones(X.shape)
     n_samples = X.shape[0]
     n_steps = X.shape[1]
