@@ -34,6 +34,7 @@ class _CSAITS(nn.Module):
         diagonal_attention_mask=True,
         ORT_weight=1,
         MIT_weight=1,
+        device=None
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -87,6 +88,15 @@ class _CSAITS(nn.Module):
         self.reduce_dim_gamma = nn.Linear(d_feature, d_feature)
         # for delta decay factor
         self.weight_combine = nn.Linear(d_feature + d_time, d_feature)
+        if device is None:
+            self.device = torch.device(
+                "cuda:0"
+                if torch.cuda.is_available() and torch.cuda.device_count() > 0
+                else "cpu"
+            )
+            # print("No given device, using default device:", self.device)
+        else:
+            self.device = device
 
     def impute(self, inputs):
         X, masks = inputs["X"], inputs["missing_mask"]
@@ -142,8 +152,8 @@ class _CSAITS(nn.Module):
         X_sma_7 = bn.move_mean(X.detach().cpu().numpy(), window=7, min_count=1, axis=1)
         X_sma_28 = bn.move_mean(X.detach().cpu().numpy(), window=28, min_count=1, axis=1)
 
-        l1 = torch.sum(torch.abs(X - X_tilde_3) - torch.Tensor(X_sma_7, device=self.device)) / torch.sum(masks)
-        l2 = torch.sum(torch.abs(X - X_tilde_3) - torch.Tensor(X_sma_28, device=self.device)) / torch.sum(masks)
+        l1 = torch.sum(torch.abs(X - X_tilde_3) - torch.tensor(X_sma_7, device=self.device)) / torch.sum(masks)
+        l2 = torch.sum(torch.abs(X - X_tilde_3) - torch.tensor(X_sma_28, device=self.device)) / torch.sum(masks)
         # print(l1, l2)
 
         reconstruction_loss += cal_mae(X_tilde_1, X, masks)
@@ -220,6 +230,7 @@ class CSAITS(BaseNNImputer):
             self.diagonal_attention_mask,
             self.ORT_weight,
             self.MIT_weight,
+            self.device
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
