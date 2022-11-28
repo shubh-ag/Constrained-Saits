@@ -6,7 +6,9 @@ Expose all usable time-series imputation models.
 # License: GPL-v3
 
 from pypots.imputation.brits import BRITS
-from pypots.imputation.constrained_saits import CSAITS
+from pypots.imputation.constrained_saits_28 import CSAITS28
+from pypots.imputation.constrained_saits_7 import CSAITS7
+from pypots.imputation.constrained_saits_7_28 import CSAITS7_28
 from pypots.imputation.locf import LOCF
 from pypots.imputation.saits import SAITS
 from pypots.imputation.mean import Mean
@@ -17,6 +19,8 @@ __all__ = [
     "Transformer",
     "SAITS",
     "LOCF",
-    "CSAITS",
+    "CSAITS28",
+    "CSAITS7",
+    "CSAITS7_28"
     "Mean"
 ]

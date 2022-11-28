@@ -6,6 +6,7 @@ Some part of the code is from https://github.com/WenjieDu/SAITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
+import bottleneck as bn
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -17,24 +18,24 @@ from pypots.data.integration import mcar, masked_fill
 from pypots.imputation.base import BaseNNImputer
 from pypots.imputation.transformer import EncoderLayer, PositionalEncoding
 from pypots.utils.metrics import cal_mae
-import bottleneck as bn
 
-class _CSAITS(nn.Module):
+
+class _CSAITS7_28(nn.Module):
     def __init__(
-        self,
-        n_layers,
-        d_time,
-        d_feature,
-        d_model,
-        d_inner,
-        n_head,
-        d_k,
-        d_v,
-        dropout,
-        diagonal_attention_mask=True,
-        ORT_weight=1,
-        MIT_weight=1,
-        device=None
+            self,
+            n_layers,
+            d_time,
+            d_feature,
+            d_model,
+            d_inner,
+            n_head,
+            d_k,
+            d_v,
+            dropout,
+            diagonal_attention_mask=True,
+            ORT_weight=1,
+            MIT_weight=1,
+            device=None
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -101,7 +102,6 @@ class _CSAITS(nn.Module):
     def impute(self, inputs):
         X, masks = inputs["X"], inputs["missing_mask"]
 
-
         # first DMSA block
         input_X_for_first = torch.cat([X, masks], dim=2)
         input_X_for_first = self.embedding_1(input_X_for_first)
@@ -140,7 +140,7 @@ class _CSAITS(nn.Module):
 
         X_tilde_3 = (1 - combining_weights) * X_tilde_2 + combining_weights * X_tilde_1
         X_c = (
-            masks * X + (1 - masks) * X_tilde_3
+                masks * X + (1 - masks) * X_tilde_3
         )  # replace non-missing part with original data
         return X_c, [X_tilde_1, X_tilde_2, X_tilde_3]
 
@@ -152,8 +152,10 @@ class _CSAITS(nn.Module):
         X_sma_7 = bn.move_mean(X.detach().cpu().numpy(), window=7, min_count=1, axis=1)
         X_sma_28 = bn.move_mean(X.detach().cpu().numpy(), window=28, min_count=1, axis=1)
 
-        l1 = torch.sum(torch.abs(X - X_tilde_3) - torch.tensor(X_sma_7, device=self.device)) / torch.sum(masks)
-        l2 = torch.sum(torch.abs(X - X_tilde_3) - torch.tensor(X_sma_28, device=self.device)) / torch.sum(masks)
+        l1 = torch.abs(torch.sum(torch.abs(X - X_tilde_3) - torch.tensor(X_sma_7, device=self.device))) / torch.sum(
+            masks)
+        l2 = torch.abs(torch.sum(torch.tensor(X_sma_28, device=self.device) - torch.abs(X - X_tilde_3))) / torch.sum(
+            masks)
         # print(l1, l2)
 
         reconstruction_loss += cal_mae(X_tilde_1, X, masks)
@@ -167,7 +169,7 @@ class _CSAITS(nn.Module):
             X_tilde_3, inputs["X_intact"], inputs["indicating_mask"]
         )
 
-        loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss + l1/7
+        loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss + l1 + l2
 
         return {
             "imputed_data": imputed_data,
@@ -177,27 +179,27 @@ class _CSAITS(nn.Module):
         }
 
 
-class CSAITS(BaseNNImputer):
+class CSAITS7_28(BaseNNImputer):
     def __init__(
-        self,
-        n_steps,
-        n_features,
-        n_layers,
-        d_model,
-        d_inner,
-        n_head,
-        d_k,
-        d_v,
-        dropout,
-        diagonal_attention_mask=True,
-        ORT_weight=1,
-        MIT_weight=1,
-        learning_rate=1e-3,
-        epochs=100,
-        patience=10,
-        batch_size=32,
-        weight_decay=1e-5,
-        device=None,
+            self,
+            n_steps,
+            n_features,
+            n_layers,
+            d_model,
+            d_inner,
+            n_head,
+            d_k,
+            d_v,
+            dropout,
+            diagonal_attention_mask=True,
+            ORT_weight=1,
+            MIT_weight=1,
+            learning_rate=1e-3,
+            epochs=100,
+            patience=10,
+            batch_size=32,
+            weight_decay=1e-5,
+            device=None,
     ):
         super().__init__(
             learning_rate, epochs, patience, batch_size, weight_decay, device
@@ -217,7 +219,7 @@ class CSAITS(BaseNNImputer):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.model = _CSAITS(
+        self.model = _CSAITS7_28(
             self.n_layers,
             self.n_steps,
             self.n_features,

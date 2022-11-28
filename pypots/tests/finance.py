@@ -21,7 +21,7 @@ def convert_to_numpy(df, key, X_cols):
 
     return np.array(ans, dtype='float32')
 
-def data(filename):
-    df = data_generator.get_data(filename)
+def data(provider, filename):
+    df = data_generator.get_data(provider, filename)
     df = convert_to_numpy(df, 'date', ['close', 'high', 'low', 'open', 'price'])
     return df

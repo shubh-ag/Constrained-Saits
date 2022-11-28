@@ -1,4 +1,5 @@
 import warnings
+
 warnings.filterwarnings('ignore')
 
 import random
@@ -33,8 +34,9 @@ def mask_data(size, setting_percentage, setting_type):
         index_numbers = random.sample(range(0, size - 1), count)
     return index_numbers
 
-def get_data(filename):
-    data = pyfinancialdata.get_multi_year(provider='histdata',
+
+def get_data(provider='histdata', filename='SPXUSD'):
+    data = pyfinancialdata.get_multi_year(provider=provider,
                                           instrument=filename,
                                           years=[2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018],
                                           time_group='30min')
