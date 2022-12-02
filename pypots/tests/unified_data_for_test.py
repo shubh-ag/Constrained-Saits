@@ -5,14 +5,13 @@ Generate the unified test data.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-import pandas as pd
 import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 
-from pypots.data import generate_random_walk_for_classification, mcar, masked_fill
-from pypots.data import load_specific_dataset
+from pypots.data import masked_fill
+
+
 # from pypots.tests import finance
 
 # def gene_random_walk_data(
@@ -74,7 +73,7 @@ from pypots.data import load_specific_dataset
 #     return data
 
 def finance_data(
-    X, func, feature_index, rate
+        X, func, feature_index, rate
 ):
     """Generate a random-walk dataset."""
     # generate samples
@@ -94,24 +93,30 @@ def finance_data(
     val_X = masked_fill(val_X, 1 - missing_mask, torch.nan)
     # test set is left to mask after normalization
 
-    train_X = train_X.reshape(-1, n_features)
-    val_X = val_X.reshape(-1, n_features)
-    test_X = test_X.reshape(-1, n_features)
-    # normalization
-    scaler = StandardScaler()
-    train_X = scaler.fit_transform(train_X)
-    val_X = scaler.transform(val_X)
-    test_X = scaler.transform(test_X)
-    # reshape into time series samples
-    train_X = train_X.reshape(-1, n_steps, n_features)
-    val_X = val_X.reshape(-1, n_steps, n_features)
-    test_X = test_X.reshape(-1, n_steps, n_features)
-
     # mask values in the test set as ground truth
     test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = func(
         test_X, feature_index, rate
     )
     test_X = masked_fill(test_X, 1 - test_X_missing_mask, torch.nan)
+
+    # unscaled_train_X = train_X.copy()
+    # unscaled_val_X = val_X.copy()
+    # unscaled_test_x = test_X.copy()
+
+    # train_X = train_X.reshape(-1, n_features)
+    # val_X = val_X.reshape(-1, n_features)
+    # test_X = test_X.reshape(-1, n_features)
+    #
+    # # normalization
+    # scaler = StandardScaler()
+    # train_X = scaler.fit_transform(train_X)
+    # val_X = scaler.transform(val_X)
+    # test_X = scaler.transform(test_X)
+    #
+    # # reshape into time series samples
+    # train_X = train_X.reshape(-1, n_steps, n_features)
+    # val_X = val_X.reshape(-1, n_steps, n_features)
+    # test_X = test_X.reshape(-1, n_steps, n_features)
 
     data = {
         "n_classes": n_classes,

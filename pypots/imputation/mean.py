@@ -52,6 +52,7 @@ class Mean(BaseImputer):
         """
         X_copy = X.copy()
         n_samples, n_steps, n_features = X_copy.shape
+        mean = np.nanmean(X, axis=1)
 
         for i in range(n_samples):
             for j in range(n_steps):
@@ -60,7 +61,8 @@ class Mean(BaseImputer):
                         if j == 0:
                             X_copy[i][j][k] = self.nan
                         else:
-                            X_copy[i][j][k] = np.nanmean(X_copy[i,:j,k])
+                            # X_copy[i][j][k] = np.nanmean(X_copy[i,:j,k])
+                            X_copy[i][j][k] = mean[i][k]
 
         if np.isnan(X_copy).any():
             X_copy = np.nan_to_num(X_copy, nan=self.nan)

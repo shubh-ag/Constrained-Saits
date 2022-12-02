@@ -98,6 +98,12 @@ def run_stats(model, EPOCHS, DATA):
     return [test_MAE, test_rmse, test_MRE]
 
 
+# provider = 'oanda'
+provider = 'histdata'
+filename = 'SPXUSD'
+# filename = 'EUR_USD'
+
+
 def run(func, feature_index, rate):
     all_results_csaits_7 = []
     all_results_csaits_28 = []
@@ -107,39 +113,40 @@ def run(func, feature_index, rate):
     all_results_brits = []
     all_results_locf = []
 
-    for _ in tqdm(range(3), position=2, leave=False, desc='simulations'):
-        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
-        all_results_csaits_7.append(run_saits(CSAITS7, 5, data))
+    for _ in tqdm(range(100), position=2, leave=False, desc='simulations'):
+        data = finance_data(data_load(provider, filename), func, feature_index, rate)
+        all_results_csaits_7.append(run_saits(CSAITS7, 10, data))
 
-        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
-        all_results_csaits_28.append(run_saits(CSAITS28, 5, data))
+        data = finance_data(data_load(provider, filename), func, feature_index, rate)
+        all_results_csaits_28.append(run_saits(CSAITS28, 10, data))
 
-        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
-        all_results_csaits_728.append(run_saits(CSAITS7_28, 5, data))
+        data = finance_data(data_load(provider, filename), func, feature_index, rate)
+        all_results_csaits_728.append(run_saits(CSAITS7_28, 10, data))
 
-        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+        data = finance_data(data_load(provider, filename), func, feature_index, rate)
         all_results_saits.append(run_saits(SAITS, 5, data))
 
-        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+        data = finance_data(data_load(provider, filename), func, feature_index, rate)
         all_results_mean.append(run_stats(Mean, 5, data))
-        
-        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+
+        data = finance_data(data_load(provider, filename), func, feature_index, rate)
         all_results_locf.append(run_stats(LOCF, 5, data))
 
-        data = finance_data(data_load('histdata', 'SPXUSD'), func, feature_index, rate)
+        data = finance_data(data_load(provider, filename), func, feature_index, rate)
         all_results_brits.append(run_brits(5, data))
 
     return all_results_csaits_7, all_results_csaits_28, all_results_csaits_728, all_results_saits, all_results_brits, all_results_locf, all_results_mean
 
+mcar_rates = [0.05]
 
-mcar_rates = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
-
-feature_indices = [(mcar_sample_feature, 0),
-                   (mcar_sample_feature, 1),
-                   (mcar_sample_feature, 2),
-                   (mcar_sample_feature, 3),
-                   (mcar_sample_feature, 4),
-                   (mcar_sample_all, 'all')]
+feature_indices = [
+    (mcar_sample_feature, 0),
+    (mcar_sample_feature, 1),
+    (mcar_sample_feature, 2),
+    (mcar_sample_feature, 3),
+    (mcar_sample_feature, 4),
+    (mcar_sample_all, 'all')
+]
 
 for rate in tqdm(mcar_rates, desc='rates', position=0):
 

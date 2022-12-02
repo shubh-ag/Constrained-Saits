@@ -45,7 +45,7 @@
 #     data['date'] = data['date'].apply(lambda x: x.date())
 #
 #     counts = data.groupby('date').count().reset_index()
-#     counts = counts[counts['time'] == 47]['date']
+#     counts = counts[counts['time'] == 48]['date']
 #
 #     data = data[data['date'].isin(counts)]
 #     #

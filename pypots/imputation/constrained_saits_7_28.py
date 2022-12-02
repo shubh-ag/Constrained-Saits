@@ -149,13 +149,24 @@ class _CSAITS7_28(nn.Module):
         reconstruction_loss = 0
         imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self.impute(inputs)
 
-        X_sma_7 = bn.move_mean(X.detach().cpu().numpy(), window=7, min_count=1, axis=1)
-        X_sma_28 = bn.move_mean(X.detach().cpu().numpy(), window=28, min_count=1, axis=1)
+        X_sma_7 = torch.tensor(bn.move_mean(X.detach().cpu().numpy(), window=7, min_count=1, axis=1),
+                               device=self.device)
+        X_sma_28 = torch.tensor(bn.move_mean(X.detach().cpu().numpy(), window=28, min_count=1, axis=1),
+                                device=self.device)
 
-        l1 = torch.abs(torch.sum(torch.abs(X - X_tilde_3) - torch.tensor(X_sma_7, device=self.device))) / torch.sum(
-            masks)
-        l2 = torch.abs(torch.sum(torch.tensor(X_sma_28, device=self.device) - torch.abs(X - X_tilde_3))) / torch.sum(
-            masks)
+        min_val = torch.minimum(X_sma_7, X_sma_28)
+        max_val = torch.maximum(X_sma_7, X_sma_28)
+        l1 = torch.sum(
+            torch.abs(
+                (X_tilde_3 < min_val) * (X_tilde_3 - min_val)
+                + (X_tilde_3 > max_val) * (X_tilde_3 - max_val)
+            )
+        ) / torch.sum(masks)
+
+        # l1 = torch.abs(torch.sum(torch.abs(X - X_tilde_3) - torch.tensor(X_sma_7, device=self.device))) / torch.sum(
+        #     masks)
+        # l2 = torch.abs(torch.sum(torch.tensor(X_sma_28, device=self.device) - torch.abs(X - X_tilde_3))) / torch.sum(
+        #     masks)
         # print(l1, l2)
 
         reconstruction_loss += cal_mae(X_tilde_1, X, masks)
@@ -169,7 +180,7 @@ class _CSAITS7_28(nn.Module):
             X_tilde_3, inputs["X_intact"], inputs["indicating_mask"]
         )
 
-        loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss + l1 + l2
+        loss = 0.5 * (self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss) + 0.5 * l1
 
         return {
             "imputed_data": imputed_data,

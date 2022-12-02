@@ -41,3 +41,5 @@
 #     df = convert_to_numpy(df, 'date', ['close', 'high', 'low', 'open', 'price'])
 #     return df
 #
+#
+# data_save('oanda', 'EUR_USD')
