@@ -1,0 +1,14 @@
+#PBS -N mds-pace-05-e               # name of job
+#PBS -A sagarwal420                  # account to which job is charged, ex: GT-gburdell3
+#PBS -l nodes=1:ppn=6:gpus=1        # resources allogated, 1 node 2 processors
+#PBS -l pmem=32gb                    # memory per core
+#PBS -l walltime=06:00:00               # job will run at most 30 min
+#PBS -q coc-ice-gpu                     # job is submitted to system queue
+#PBS -j oe                          # output and error is combined into the same file
+#PBS -o mds-pace-05.out          # output file is named gettingStarted.out
+#
+
+module load anaconda3
+conda activate mds_project
+cd /storage/home/hcocice1/sagarwal420/PyPOTS
+python3 pypots/tests/experiment_05.py

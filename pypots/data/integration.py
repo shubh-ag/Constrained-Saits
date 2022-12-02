@@ -8,13 +8,6 @@ Integrate with data functions from other libraries.
 
 import numpy as np
 import pycorruptor as corruptor
-from tsdb import (
-    pickle_load as _pickle_load,
-    pickle_dump as _pickle_dump,
-)
-
-pickle_load = _pickle_load
-pickle_dump = _pickle_dump
 
 
 def cal_missing_rate(X):
